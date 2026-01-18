@@ -35,15 +35,13 @@ export default async function handler(req, res) {
 健康档案：
 - 年龄：73岁（1953年生）
 - 重要病史：曾患胃癌并治愈，接受过7次化疗，胃切除大半
-- 当前状况：消化功能较弱，进食量小，牙齿缺失较多，听力下降，体重偏低
-- 参考提示：在给出建议时，可以适当考虑他的消化能力和咀嚼能力，但不必过度限制分析的全面性`;
+- 当前状况：消化功能较弱，进食量小，牙齿缺失较多，听力下降，体重偏低`;
         } else if (person === '婆婆') {
             patientHistory = `
 健康档案：
 - 年龄：72岁（1954年生）
 - 重要病史：高血压（长期服药控制中）
-- 当前状况：身体相对硬朗，但体重偏低
-- 参考提示：在给出建议时，注意与高血压相关的用药和饮食事项`;
+- 当前状况：身体相对硬朗，但体重偏低`;
         }
 
         const prompt = `你是一位专业且温和的家庭健康顾问，名叫"馨婷"，正在为老年人提供健康建议。
@@ -56,13 +54,13 @@ ${patientHistory}
 不适部位：${bodyPart}
 症状表现：${symptoms.join('、')}
 
-请基于患者的症状和健康档案，深入分析并给出专业建议。输出格式严格按以下三个部分：
+请基于患者的当前症状，深入分析并给出专业建议。输出格式严格按以下三个部分：
 
-### 可能的原因
-请深入分析这些症状背后可能的原因，可以从多个角度考虑。用3-4句话说明，既要全面又要通俗易懂。参考健康档案中的信息，但不要被限制，如果症状与病史无关，也要给出其他可能的原因。
+### 可能原因
+请深入分析这些症状背后可能的原因，用3-4句话说明，既要全面又要通俗易懂。
 
-### 居家治疗建议
-根据具体症状给出4-5条有针对性的建议，要具体可操作。如果症状与患者的特殊健康状况相关，可以在相应建议中提及；如果症状是普遍性的，就给出通用的有效建议，不必刻意强调健康档案。
+### 治疗建议
+根据具体症状给出4-5条有针对性的建议，要具体可操作。
 
 ### 什么时候要去医院
 明确列出需要及时就医的警示信号（2-3条），帮助老人判断病情轻重。
@@ -101,7 +99,7 @@ ${patientHistory}
                     }
                 ],
                 temperature: 0.7,
-                max_tokens: 1000
+                max_tokens: 4000  // R1 需要更多 tokens（包含推理过程+最终答案）
             })
         });
 
@@ -111,8 +109,26 @@ ${patientHistory}
             return res.status(500).json({ error: 'AI 服务暂时不可用' });
         }
 
+
         const data = await response.json();
-        const advice = data.choices[0]?.message?.content || '抱歉，暂时无法给出建议';
+
+        // R1 响应包含 reasoning_content（思考过程）和 content（最终答案）
+        const message = data.choices[0]?.message;
+
+        // 记录完整响应用于调试
+        console.log('DeepSeek R1 Response:', {
+            hasReasoningContent: !!message?.reasoning_content,
+            hasContent: !!message?.content,
+            contentLength: message?.content?.length || 0
+        });
+
+        // 提取最终答案（content 字段）
+        const advice = message?.content;
+
+        if (!advice || advice.trim().length === 0) {
+            console.error('Empty response from DeepSeek R1');
+            return res.status(500).json({ error: '抱歉，暂时无法生成建议，请稍后再试' });
+        }
 
         return res.status(200).json({ advice });
 
