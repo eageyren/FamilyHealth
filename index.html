@@ -1,0 +1,101 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>馨婷的家书</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="data/story-data.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <div class="top-bar">
+            <button class="voice-toggle" onclick="toggleTheme()">
+                <span id="themeIcon">🌙</span>
+            </button>
+        </div>
+        <div class="card-glass">
+            <div id="date-display" style="font-size:15px;color:var(--text-sub);font-weight:500;margin-bottom:20px;">
+            </div>
+            <div id="story-text"
+                style="font-size:24px;line-height:1.5;margin-top:24px;margin-bottom:40px;font-weight:600;opacity:0.8;padding:16px 20px;border-left:3px solid var(--color-green-text);border-radius:6px;background:rgba(137,164,146,0.03);">
+            </div>
+            <div id="choices-container"></div>
+        </div>
+    </div>
+    <script>
+        function toggleTheme() { const b = document.body, i = document.getElementById('themeIcon'), d = b.classList.toggle('dark-mode'); b.classList.remove('light-mode'); if (d) { b.classList.add('dark-mode'); i.textContent = '☀️'; localStorage.setItem('theme', 'dark'); } else { b.classList.add('light-mode'); i.textContent = '🌙'; localStorage.setItem('theme', 'light'); } }
+        function initTheme() { const s = localStorage.getItem('theme'), i = document.getElementById('themeIcon'); if (s === 'dark') { document.body.classList.add('dark-mode'); i.textContent = '☀️'; } else if (s === 'light') { document.body.classList.add('light-mode'); i.textContent = '🌙'; } else { if (window.matchMedia('(prefers-color-scheme:dark)').matches) i.textContent = '☀️'; } }
+        initTheme();
+
+        // 设置实时日期
+        function setCurrentDate() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = now.getMonth() + 1;
+            const day = now.getDate();
+            const dateDisplay = document.getElementById('date-display');
+            if (dateDisplay) {
+                dateDisplay.textContent = `${year}年${month}月${day}日 · 馨婷的家书`;
+            }
+        }
+        setCurrentDate();
+
+        // 烟花动效函数
+        function createFirework(x, y) {
+            const colors = ['#6b9d7a', '#89a492', '#66D98F', '#52C77D', '#3FB56B'];
+            const particleCount = 12;
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.style.position = 'fixed';
+                particle.style.left = x + 'px';
+                particle.style.top = y + 'px';
+                particle.style.width = '6px';
+                particle.style.height = '6px';
+                particle.style.borderRadius = '50%';
+                particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                particle.style.pointerEvents = 'none';
+                particle.style.zIndex = '9999';
+
+                document.body.appendChild(particle);
+
+                const angle = (Math.PI * 2 * i) / particleCount;
+                const velocity = 50 + Math.random() * 50;
+                const tx = Math.cos(angle) * velocity;
+                const ty = Math.sin(angle) * velocity;
+
+                particle.animate([
+                    { transform: 'translate(0, 0) scale(1)', opacity: 1 },
+                    { transform: `translate(${tx}px, ${ty}px) scale(0)`, opacity: 0 }
+                ], {
+                    duration: 600,
+                    easing: 'cubic-bezier(0, .9, .57, 1)'
+                }).onfinish = () => particle.remove();
+            }
+        }
+
+        const storyText = document.getElementById('story-text'), choicesContainer = document.getElementById('choices-container');
+        function renderScene(k) {
+            const s = storyData[k]; if (!s) return; storyText.innerHTML = s.text.replace(/\n/g, '<br>'); choicesContainer.innerHTML = ''; s.choices.forEach(c => {
+                const b = document.createElement('button'); b.className = 'choice-btn' + (c.highlight ? ' highlight' : ''); b.innerHTML = c.text; b.onclick = (e) => {
+                    // 添加烟花效果
+                    const rect = b.getBoundingClientRect();
+                    const x = rect.left + rect.width / 2;
+                    const y = rect.top + rect.height / 2;
+                    createFirework(x, y);
+
+                    // 延迟执行跳转，让动画播放
+                    setTimeout(() => {
+                        if (c.action === 'goToHealth') window.location.href = 'health.html'; else renderScene(c.target);
+                    }, 100);
+                }; choicesContainer.appendChild(b);
+            });
+        }
+        renderScene('start');
+    </script>
+</body>
+
+</html>

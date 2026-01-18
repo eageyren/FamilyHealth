@@ -1,0 +1,17 @@
+{
+    "name": "family-health-assistant",
+    "version": "1.0.0",
+    "description": "馨婷的家书 - 老年人健康助手",
+    "private": true,
+    "scripts": {
+        "dev": "npx serve .",
+        "vercel-dev": "vercel dev"
+    },
+    "keywords": [
+        "health",
+        "elderly",
+        "family"
+    ],
+    "author": "馨婷",
+    "license": "MIT"
+}

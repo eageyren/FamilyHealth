@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>健康小助手 - 馨婷的家书</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+    <div class="container">
+        <!-- 顶部导航 -->
+        <div class="top-bar">
+            <button class="nav-btn" onclick="goBack()" title="返回">←</button>
+            <div style="display: flex; gap: 12px; align-items: center;">
+                <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="切换主题">
+                    <span id="themeIcon">🌙</span>
+                </button>
+                <div class="voice-toggle" id="voiceToggle" onclick="toggleVoice()">
+                    <span id="voiceIcon">🔇</span>
+                    <span id="voiceText">语音关</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 步骤指示 -->
+        <div class="text-center mb-4" id="stepText" style="color: var(--text-sub); margin-bottom: 24px;">
+            第 1 步 / 共 3 步
+        </div>
+
+        <!-- 第1步：选择谁不舒服 -->
+        <div class="page active" id="page1">
+            <div class="card-glass text-center">
+                <div style="font-size: 50px; margin-bottom: 20px;">👨‍👩‍👧</div>
+                <h2 class="mb-4">谁不舒服呀？</h2>
+                <p style="color:var(--text-sub); margin-bottom: 30px;">馨婷来帮您分析一下</p>
+
+                <button class="btn btn-primary" onclick="selectPerson('爷爷')">
+                    <span style="font-size: 24px; margin-right: 10px;">👴</span> 爷爷不舒服
+                </button>
+                <button class="btn btn-primary" onclick="selectPerson('婆婆')">
+                    <span style="font-size: 24px; margin-right: 10px;">👵</span> 婆婆不舒服
+                </button>
+            </div>
+        </div>
+
+        <!-- 第2步：选择身体部位 -->
+        <div class="page" id="page2">
+            <div class="card-glass">
+                <h2 class="text-center mb-4">🧍 哪里不舒服？</h2>
+
+                <div class="body-grid" style="grid-template-columns: 1fr 1fr 1fr;">
+                    <div class="body-card" onclick="selectBodyPart('head')">
+                        <span class="body-icon">🧠</span>
+                        <span class="body-label">头部</span>
+                    </div>
+                    <div class="body-card" onclick="selectBodyPart('eyes')">
+                        <span class="body-icon">👁️</span>
+                        <span class="body-label">眼睛</span>
+                    </div>
+                    <div class="body-card" onclick="selectBodyPart('nose')">
+                        <span class="body-icon">👃</span>
+                        <span class="body-label">鼻子</span>
+                    </div>
+                    <div class="body-card" onclick="selectBodyPart('ears')">
+                        <span class="body-icon">👂</span>
+                        <span class="body-label">耳朵</span>
+                    </div>
+                    <div class="body-card" onclick="selectBodyPart('neck')">
+                        <span class="body-icon">🧣</span>
+                        <span class="body-label">颈椎/肩膀</span>
+                    </div>
+                    <div class="body-card" onclick="selectBodyPart('chest')">
+                        <span class="body-icon">💗</span>
+                        <span class="body-label">胸口/心脏</span>
+                    </div>
+                    <div class="body-card" onclick="selectBodyPart('stomach')">
+                        <span class="body-icon">🫃</span>
+                        <span class="body-label">肚子/肠胃</span>
+                    </div>
+                    <div class="body-card" onclick="selectBodyPart('limbs')">
+                        <span class="body-icon">🦵</span>
+                        <span class="body-label">胳膊/腿脚</span>
+                    </div>
+                    <div class="body-card" onclick="selectBodyPart('whole')">
+                        <span class="body-icon">🧘</span>
+                        <span class="body-label">全身不舒服</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第3步：选择具体症状 -->
+        <div class="page" id="page3">
+            <div class="card-glass">
+                <div class="text-center mb-4">
+                    <span id="symptomIcon" style="font-size: 40px;"></span>
+                    <h2 id="symptomPageTitle" style="margin-top: 10px;">有什么症状？</h2>
+                    <p style="color:var(--text-sub); font-size: 14px;">(可以多选几个)</p>
+                </div>
+
+                <div id="symptomsGrid" style="text-align: center; margin-bottom: 30px;">
+                    <!-- 动态生成 -->
+                </div>
+
+                <div style="background: rgba(0,0,0,0.03); padding: 15px; border-radius: 12px; margin-bottom: 20px;">
+                    <div style="font-size: 14px; color: var(--text-sub); margin-bottom: 8px;">已选择：</div>
+                    <div id="selectedTags" style="display:flex; flex-wrap:wrap; gap:8px; min-height: 30px;">
+                        <span style="color:#a0aec0;">点击上方选择症状</span>
+                    </div>
+                </div>
+
+                <button class="btn btn-success" id="submitBtn" onclick="submitSymptoms()" disabled>
+                    🤖 开始分析
+                </button>
+            </div>
+        </div>
+
+        <!-- 第4步：显示结果 -->
+        <div class="page" id="page4">
+            <div class="card-glass">
+                <!-- 加载中 -->
+                <div id="loadingState" class="text-center" style="padding: 40px 0;">
+                    <div style="font-size: 40px; animation: bounce 1s infinite;">🤔</div>
+                    <p style="margin-top: 20px; color: var(--text-sub);">馨婷正在思考中...</p>
+                </div>
+
+                <!-- 结果内容 -->
+                <div id="resultCard" class="hidden">
+                    <div class="result-header">
+                        <h2 style="color: var(--accent);">💝 馨婷的建议</h2>
+                        <p id="resultFor" style="color: var(--text-sub);">给爷爷的健康贴士</p>
+                    </div>
+
+                    <div class="suggest-content" id="resultContent" style="font-size: 18px; line-height: 1.8;">
+                        <!-- AI 内容 -->
+                    </div>
+
+                    <div class="disclaimer">
+                        ⚠️ 建议仅供参考，如果不舒服得厉害，一定要去医院哦！
+                    </div>
+
+                    <div style="margin-top: 30px;">
+                        <button class="btn btn-success" onclick="speakResult()">🔊 朗读建议</button>
+                        <button class="btn" onclick="goHome()">🏠 返回主页</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const symptomsData = {
+            head: {
+                name: "头部",
+                icon: "🧠",
+                symptoms: ["头晕", "头疼", "站起时头晕", "记性差", "牙疼"]
+            },
+            eyes: {
+                name: "眼睛",
+                icon: "👁️",
+                symptoms: ["眼睛花", "眼睛干涩", "眼睛发红", "眼睛流泪", "飞蚊症"]
+            },
+            nose: {
+                name: "鼻子",
+                icon: "👃",
+                symptoms: ["打呼噜", "流鼻涕", "闻不到味道"]
+            },
+            ears: {
+                name: "耳朵",
+                icon: "👂",
+                symptoms: ["耳鸣", "耳痛", "耳朵流液体"]
+            },
+            neck: {
+                name: "颈椎/肩膀",
+                icon: "🧣",
+                symptoms: ["脖子疼", "肩膀酸痛", "脖子僵硬", "手麻", "回头困难", "肩膀抬不起来", "背痛", "落枕"]
+            },
+            chest: {
+                name: "胸口/心脏",
+                icon: "💗",
+                symptoms: ["胸闷", "心慌", "气短", "咳嗽", "呼吸困难", "心跳快", "心口疼", "痰多", "血压高"]
+            },
+            stomach: {
+                name: "肚子/肠胃",
+                icon: "🫃",
+                symptoms: ["胃痛", "胃胀", "反酸", "恶心", "食欲差", "肚子疼", "便秘", "拉肚子", "消化不良"]
+            },
+            limbs: {
+                name: "胳膊/腿脚",
+                icon: "🦵",
+                symptoms: ["膝盖疼", "腿抽筋", "脚肿", "手脚麻木", "关节肿痛", "胳膊抬不起", "走路累", "脚底疼", "手抖"]
+            },
+            whole: {
+                name: "全身",
+                icon: "🧘",
+                symptoms: ["失眠", "没力气", "发烧", "怕冷", "睡不好", "容易累", "浑身酸痛", "出虚汗", "皮肤痒", "水肿"]
+            }
+        };
+
+        let state = { person: "", bodyPart: "", symptoms: [], voiceEnabled: false, resultText: "" };
+        const synth = window.speechSynthesis;
+
+        function speak(text) {
+            if (!state.voiceEnabled || !synth) return;
+            synth.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'zh-CN'; utterance.rate = 0.85; utterance.pitch = 1; utterance.volume = 1;
+            synth.speak(utterance);
+        }
+
+        // 主题切换功能
+        function toggleTheme() {
+            const body = document.body;
+            const themeIcon = document.getElementById('themeIcon');
+            const isDark = body.classList.toggle('dark-mode');
+            body.classList.remove('light-mode');
+            if (isDark) {
+                body.classList.add('dark-mode');
+                themeIcon.textContent = '☀️';
+                localStorage.setItem('theme', 'dark');
+            } else {
+                body.classList.add('light-mode');
+                themeIcon.textContent = '🌙';
+                localStorage.setItem('theme', 'light');
+            }
+        }
+
+        // 初始化主题
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            const themeIcon = document.getElementById('themeIcon');
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-mode');
+                themeIcon.textContent = '☀️';
+            } else if (savedTheme === 'light') {
+                document.body.classList.add('light-mode');
+                themeIcon.textContent = '🌙';
+            } else {
+                // 跟随系统
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                if (prefersDark) {
+                    themeIcon.textContent = '☀️';
+                }
+            }
+        }
+
+        // 烟花动效函数
+        function createFirework(x, y) {
+            const colors = ['#6b9d7a', '#89a492', '#66D98F', '#52C77D', '#3FB56B'];
+            const particleCount = 12;
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.style.position = 'fixed';
+                particle.style.left = x + 'px';
+                particle.style.top = y + 'px';
+                particle.style.width = '6px';
+                particle.style.height = '6px';
+                particle.style.borderRadius = '50%';
+                particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                particle.style.pointerEvents = 'none';
+                particle.style.zIndex = '9999';
+
+                document.body.appendChild(particle);
+
+                const angle = (Math.PI * 2 * i) / particleCount;
+                const velocity = 50 + Math.random() * 50;
+                const tx = Math.cos(angle) * velocity;
+                const ty = Math.sin(angle) * velocity;
+
+                particle.animate([
+                    { transform: 'translate(0, 0) scale(1)', opacity: 1 },
+                    { transform: `translate(${tx}px, ${ty}px) scale(0)`, opacity: 0 }
+                ], {
+                    duration: 600,
+                    easing: 'cubic-bezier(0, .9, .57, 1)'
+                }).onfinish = () => particle.remove();
+            }
+        }
+
+        // 页面加载时初始化主题
+        initTheme();
+
+        function toggleVoice() {
+            state.voiceEnabled = !state.voiceEnabled;
+            const toggle = document.getElementById('voiceToggle');
+            const icon = document.getElementById('voiceIcon');
+            const text = document.getElementById('voiceText');
+            if (state.voiceEnabled) {
+                toggle.classList.add('active'); icon.textContent = '🔊'; text.textContent = '语音开';
+                speak('语音已开启');
+            } else {
+                toggle.classList.remove('active'); icon.textContent = '🔇'; text.textContent = '语音关';
+                synth.cancel();
+            }
+        }
+
+        function goToPage(pageNum) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(`page${pageNum}`).classList.add('active');
+            const stepText = document.getElementById('stepText');
+            if (pageNum < 4) {
+                stepText.style.display = 'block'; stepText.textContent = `第 ${pageNum} 步 / 共 3 步`;
+            } else { stepText.style.display = 'none'; }
+        }
+
+        function goBack() {
+            const activePage = document.querySelector('.page.active');
+            const pageNum = parseInt(activePage.id.replace('page', ''));
+            if (pageNum > 1) { goToPage(pageNum - 1); } else { goHome(); }
+        }
+
+        function goHome() { window.location.href = 'index.html'; }
+
+        function selectPerson(person) {
+            // 触发烟花效果
+            const clickedBtn = event.target.closest('button');
+            if (clickedBtn) {
+                const rect = clickedBtn.getBoundingClientRect();
+                const x = rect.left + rect.width / 2;
+                const y = rect.top + rect.height / 2;
+                createFirework(x, y);
+            }
+
+            setTimeout(() => {
+                state.person = person;
+                speak(`好的，${person}哪里不舒服呢？`);
+                goToPage(2);
+            }, 100);
+        }
+
+        function selectBodyPart(part) {
+            // 触发烟花效果
+            const clickedCard = event.target.closest('.body-card');
+            if (clickedCard) {
+                const rect = clickedCard.getBoundingClientRect();
+                const x = rect.left + rect.width / 2;
+                const y = rect.top + rect.height / 2;
+                createFirework(x, y);
+            }
+
+            setTimeout(() => {
+                state.bodyPart = part;
+                const partData = symptomsData[part];
+                document.getElementById('symptomIcon').textContent = partData.icon;
+                document.getElementById('symptomPageTitle').textContent = `${partData.name}有什么症状？`;
+                const grid = document.getElementById('symptomsGrid');
+                grid.innerHTML = partData.symptoms.map(s => `<div class="symptom-tag" onclick="toggleSymptom('${s}', this)">${s}</div>`).join('');
+                state.symptoms = []; updateSelectedTags();
+                speak(`${partData.name}，请选择具体症状`);
+                goToPage(3);
+            }, 100);
+        }
+
+        function toggleSymptom(symptom, el) {
+            const index = state.symptoms.indexOf(symptom);
+            if (index > -1) { state.symptoms.splice(index, 1); el.classList.remove('active'); }
+            else { state.symptoms.push(symptom); el.classList.add('active'); }
+            updateSelectedTags();
+        }
+
+        function updateSelectedTags() {
+            const container = document.getElementById('selectedTags');
+            const btn = document.getElementById('submitBtn');
+            if (state.symptoms.length === 0) {
+                container.innerHTML = '<span style="color:#a0aec0;">点击上方选择症状</span>';
+                btn.disabled = true;
+            } else {
+                container.innerHTML = state.symptoms.map(s => `<span class="symptom-tag active" style="margin:2px; font-size:14px; padding:6px 12px; cursor:default;">${s}</span>`).join('');
+                btn.disabled = false;
+            }
+        }
+
+        async function submitSymptoms() {
+            goToPage(4);
+            document.getElementById('loadingState').classList.remove('hidden');
+            document.getElementById('resultCard').classList.add('hidden');
+            speak('馨婷正在为您分析，请稍等');
+
+            try {
+                // 使用后端 API
+                const response = await fetch('/api/health', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        person: state.person,
+                        bodyPart: symptomsData[state.bodyPart].name,
+                        symptoms: state.symptoms
+                    })
+                });
+
+                if (!response.ok) throw new Error('请求失败');
+                const data = await response.json();
+                showResult(data.advice);
+            } catch (error) {
+                console.error(error);
+                showResult('抱歉，馨婷暂时无法分析。\n\n请直接告诉家人您的症状。\n\n如果很不舒服，一定要尽快去看医生哦！');
+            }
+        }
+
+        function showResult(advice) {
+            document.getElementById('loadingState').classList.add('hidden');
+            document.getElementById('resultCard').classList.remove('hidden');
+            document.getElementById('resultFor').textContent = `给${state.person}的建议`;
+            const formattedAdvice = advice.replace(/### (.*)/g, '<h3>$1</h3>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/- (.*)/g, '<li>$1</li>');
+            document.getElementById('resultContent').innerHTML = formattedAdvice;
+            state.resultText = advice.replace(/[#*\-]/g, '').replace(/\n+/g, '。');
+            speakResult();
+        }
+
+        function speakResult() {
+            if (state.resultText) speak(`${state.person}，馨婷给您的建议是：${state.resultText}`);
+        }
+    </script>
+</body>
+
+</html>
